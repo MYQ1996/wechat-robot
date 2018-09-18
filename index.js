@@ -15,7 +15,7 @@ var querystring = require('querystring');
 // utils
 const _ = require('./utils/util');
 const imgUtil = require('./utils/image');
-let flag = true;
+let flag = false;
 // modules
 const poetry = require('./modules/poetry');
 const getPicture = require('./modules/searchPic');
@@ -25,6 +25,10 @@ const ip = require('./modules/ip');
 const weather = require('./modules/weather');
 const keyword = require('./modules/keyword');
 const jobs = require('./modules/jobs');
+const sentiment = require('./network/sentiment');
+const turing = require('./network/turing');
+
+
 
 let bot, loginUserName;
 let contactUsers = [],
@@ -35,7 +39,6 @@ let contactUsers = [],
 try {
     bot = new Wechat(require('./sync-data.json'));
 } catch (e) {
-    console.log(111)
     bot = new Wechat();
 }
 /**服务心跳检查（发送到微信文件助手） */
@@ -197,9 +200,9 @@ function textMsgHandler(msg) {
         flag = false
         sendText("闭嘴中....", msg);
         return
-    } else if (flag == false && text == "机器人开启") {
+    } else if (flag == false && text == "曾申出来") {
         flag = true
-        sendText("终于可以瞎比比了....", msg);
+        sendText("曾申机器人正在启动中....", msg);
     } else if (flag == true) {
         // 图片搜索
         if (text.indexOf('图 ') === 0) {
@@ -270,30 +273,13 @@ function textMsgHandler(msg) {
         }
 
         else{
-            var requestData = {
-                "reqType": 0,
-                "perception": {
-                    "inputText": {
-                        "text": text
-                    }
-                },
-                "userInfo": {
-                    "apiKey": "a6f7aa99d4564f69ad3954eb69fd5beb",
-                    "userId": "myq"
-                }
-            };
-            request({
-                url: 'http://openapi.tuling123.com/openapi/api/v2',
-                method: "POST",
-                json: true,
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: requestData
-            }, function (error, response, body) {
-                sendText(body.results[0].values.text, msg);
-                if (!error && response.statusCode == 200) {}
-            });
+            // sentiment.analysis(text, sentback=(res)=>{
+            //     sendText(res, msg);
+            // })
+
+            turing.chat(text, sentback = (res) => {
+                sendText(res, msg);
+            })
         }
     }   
     /* else if (_.isCurry(text)) {
